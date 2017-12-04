@@ -1,8 +1,74 @@
+//https://github.com/iManOfSteel/MIPT/tree/master/deque
 #include <vector>
 #include <iterator>
 #include <algorithm>
 #include <iostream>
+#include <cstring>
 using namespace std;
+
+template<class T>
+class Vector {
+public:
+	T* v;
+	size_t tsize, _size;
+	Vector() {
+		tsize = 0;
+		_size = 4;
+		v = new T[4];
+	}
+	~Vector() {
+		delete[] v;
+	}
+	size_t size() const {
+		return tsize;
+	}
+	bool empty() const {
+		return tsize == 0;
+	}
+	void normalize() {
+		if (tsize == _size || (_size > 4 && _size >= 4 * tsize)) {
+			T* temp = new T[2 * tsize];
+			memcpy(temp, v, sizeof(T) * tsize);
+			swap(temp, v);
+			_size = 2 * tsize;
+			delete[] temp;
+		}
+	}
+	T& back() {
+		return v[tsize - 1];
+	}
+	const T& back() const {
+		return v[tsize - 1];
+	}
+	T pop_back() {
+		T ret = v[tsize - 1];
+		tsize--;
+		normalize();
+		return ret;
+	}
+	void push_back(T& val) {
+		v[tsize++] = val;
+		normalize();
+	}
+	T& operator[](size_t n) {
+		return v[n];
+	}
+	const T& operator[](size_t n) const {
+		return v[n];
+	}
+	void operator=(const Vector &V) {
+		_size = V._size;
+		tsize = V.tsize;
+		delete[] v;
+		v = new T[_size];
+		memcpy(v, V.v, sizeof(T) * tsize);
+	}
+	void reverse() {
+		for (int i = 0; i < (int)tsize / 2; i++)
+			swap(v[i], v[tsize - i - 1]);
+	}
+};
+
 template<class Deque, class T>
 class base_iterator : public std::iterator<std::random_access_iterator_tag, T> {
 public:
@@ -85,28 +151,28 @@ public:
 
 template<class T>
 class Deque {
-	std::vector<T> head, tail;
+	Vector<T> head, tail;
 	void normalize() {
 		size_t n = head.size() + tail.size();
 		if (tail.size() > 2 * head.size()) {
-			reverse(tail.begin(), tail.end());
-			reverse(head.begin(), head.end());
+			tail.reverse();
+			head.reverse();
 			while (head.size() < n / 2) {
 				head.push_back(tail.back());
 				tail.pop_back();
 			}
-			reverse(tail.begin(), tail.end());
-			reverse(head.begin(), head.end());
+			tail.reverse();
+			head.reverse();
 		}
 		else if (head.size() > 2 * tail.size()) {
-			reverse(tail.begin(), tail.end());
-			reverse(head.begin(), head.end());
+			tail.reverse();
+			head.reverse();
 			while (tail.size() < n / 2) {
 				tail.push_back(head.back());
 				head.pop_back();
 			}
-			reverse(tail.begin(), tail.end());
-			reverse(head.begin(), head.end());
+			tail.reverse();
+			head.reverse();
 		}
 	}
 public:
